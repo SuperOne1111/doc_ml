@@ -1,5 +1,6 @@
 ```mermaid
 
+
 sequenceDiagram
     autonumber
     actor User
@@ -31,7 +32,7 @@ sequenceDiagram
     ContextBuilder-->>Engine: "AgentOutput(data=structured_goal)"
     deactivate ContextBuilder
     
-    Engine->>Engine: "execution_context.goal = structured_goal"
+    Engine->>Engine: "execution_context = execution_context.safe_update(goal=structured_goal)"
     Engine->>Policy: "evaluate_transition(global_state, context)"
     Policy-->>Engine: "PolicyDecision(next_state=PLAN_GENERATION)"
 
@@ -59,7 +60,7 @@ sequenceDiagram
         Engine->>Memory: "store(pattern, scope=GLOBAL)"
         Engine->>Snapshot: "restore_snapshot(snap_001)"
         Engine->>Tracer: "record_event(SNAPSHOT_RESTORED, snap_001)"
-        Engine->>Engine: "execution_context.replan_scope=GLOBAL"
+        Engine->>Engine: "execution_context = execution_context.safe_update(replan_scope='GLOBAL')"
         Note right of Engine: 触发全局重规划
     else plan approved
         Engine->>Memory: "store(plan_summary, scope=SESSION)"
@@ -73,8 +74,7 @@ sequenceDiagram
     Snapshot-->>Engine: "snapshot_id=snap_002"
 
     Engine->>Engine: "transition() lifecycle_state=EXECUTION_PREPARE"
-    Engine->>Engine: "execution_context.active_steps={step_id: PENDING}"
-    Engine->>Engine: "execution_context.current_batch_id=batch_001"
+    Engine->>Engine: "execution_context = execution_context.safe_update(active_steps={step_id: 'PENDING'}, current_batch_id='batch_001')"
     Engine->>Tracer: "record_event(STATE_TRANSITION, EXECUTION_PREPARE)"
 
     note over Engine: === 阶段 4: 步骤执行循环 (核心自愈逻辑) ===
@@ -112,9 +112,9 @@ sequenceDiagram
                 Engine->>Engine: "error=ToolExecutionResult.error"
                 alt error.suggested_action=RETRY
                     Engine->>Engine: "retry_tool(backoff)"
-                    Engine->>Engine: "active_steps[step_id]=RUNNING"
+                    Engine->>Engine: "execution_context = execution_context.safe_update(active_steps={**execution_context.active_steps, step_id: 'RUNNING'})"
                 else error.suggested_action=HALT
-                    Engine->>Engine: "active_steps[step_id]=FAILED"
+                    Engine->>Engine: "execution_context = execution_context.safe_update(active_steps={**execution_context.active_steps, step_id: 'FAILED'})"
                     Engine->>Engine: "escalate_to_step_review()"
                 end
             else Tool Success
@@ -126,8 +126,7 @@ sequenceDiagram
                 StepExecutor-->>Engine: "AgentOutput(data=structured_result)"
                 deactivate StepExecutor
                 
-                Engine->>Engine: "active_steps[step_id]=COMPLETED"
-                Engine->>Engine: "execution_context.intermediate_results[step_id]=structured_result"
+                Engine->>Engine: "execution_context = execution_context.safe_update(active_steps={**execution_context.active_steps, step_id: 'COMPLETED'}, intermediate_results={**execution_context.intermediate_results, step_id: structured_result})"
                 Note right of Engine: 4.3 解决方案：临时数据存 ExecutionContext
                 Engine->>Memory: "store(key=step_summary, scope=SESSION)"
                 Note right of Engine: 4.3 解决方案：关键结果存 BaseMemory
@@ -149,7 +148,7 @@ sequenceDiagram
                 Engine->>Policy: "evaluate_transition(...)"
                 Policy-->>Engine: "PolicyDecision(next_state=REPLAN)"
                 Engine->>Engine: "transition() lifecycle_state=REPLAN"
-                Engine->>Engine: "execution_context.replan_scope=LOCAL"
+                Engine->>Engine: "execution_context = execution_context.safe_update(replan_scope='LOCAL')"
                 Engine->>Memory: "store(pattern, scope=GLOBAL)"
                 Note right of Engine: 局部重规划
             else failure_type=CRITICAL_GLOBAL
@@ -158,15 +157,14 @@ sequenceDiagram
                 Engine->>Engine: "transition() lifecycle_state=ROLLBACK"
                 Engine->>Snapshot: "restore_snapshot(snap_002)"
                 Engine->>Tracer: "record_event(SNAPSHOT_RESTORED, snap_002)"
-                Engine->>Engine: "execution_context = execution_context.safe_update(snapshot_id=None)"  # 通过safe_update确保线程安全和原子性
-                Engine->>Engine: "execution_context.current_batch_id=None"  # 清空批次ID，防止重复处理
+                Engine->>Engine: "execution_context = execution_context.safe_update(snapshot_id=None, current_batch_id=None)"
                 Engine->>Engine: "transition() lifecycle_state=REPLAN"
-                Engine->>Engine: "execution_context.replan_scope=GLOBAL"
+                Engine->>Engine: "execution_context = execution_context.safe_update(replan_scope='GLOBAL')"
                 Note right of Engine: 全局回滚 + 重规划
             end
         else step review approved
             Engine->>Engine: "mark_batch_completed()"
-            Engine->>Engine: "execution_context.current_batch_id=batch_002"
+            Engine->>Engine: "execution_context = execution_context.safe_update(current_batch_id='batch_002')"
         end
     end
 
@@ -184,7 +182,7 @@ sequenceDiagram
         
         Engine-->>User: "RequestHumanIntervention()"
         User->>Engine: "submit_human_feedback(feedback)"
-        Engine->>Engine: "update_context(feedback)"
+        Engine->>Engine: "execution_context = execution_context.safe_update(human_feedback=feedback)"
         Engine->>Policy: "evaluate_transition(...)"
         Policy-->>Engine: "PolicyDecision(next_state=STEP_EXECUTION)"
         Engine->>Engine: "transition() lifecycle_state=STEP_EXECUTION"
