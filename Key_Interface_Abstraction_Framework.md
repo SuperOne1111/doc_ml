@@ -160,6 +160,7 @@ class ExecutionContext(BaseModel):
     包含当前计划、中间结果、错误记录
     ⚠️ 注意：此对象在并行执行环境中会被多个步骤同时访问，
     实现时必须确保并发安全（例如使用锁机制或不可变副本）
+    ⚠️ 注意：在快照恢复时，必须清空 snapshot_id 以避免循环依赖
     """
     current_plan: Optional[ExecutionPlan] = None
     active_steps: Dict[str, StepStatus] = {}  # 支持并行状态跟踪
@@ -288,7 +289,14 @@ class BaseAgent(ABC):
 
     @abstractmethod
     def validate_output(self, output: AgentOutput) -> bool:
-        """本地输出格式校验"""
+        """
+        本地输出格式校验
+        
+        ⚠️ 决策歧义说明：
+        - Agent 仅负责认知与评估，不可包含状态转移指令
+        - 所有 output.data 必须符合当前 Agent 角色职责
+        - confidence 评分仅作为参考，最终决策权归 Execution Engine
+        """
         pass
 ```
 
@@ -431,6 +439,12 @@ class BasePolicy(ABC):
     ) -> bool:
         """
         权限系统核心：控制哪些 Agent 可调用哪些工具。
+        
+        ⚠️ 权限说明：
+        - 仅 PUBLIC 工具可被所有 Agent 调用
+        - INTERNAL 工具仅可被特定可信 Agent 调用
+        - ADMIN 工具需要人工确认或最高权限
+        - 此方法必须在工具执行前调用
         """
         pass
 ```
@@ -500,6 +514,7 @@ class BaseSnapshotManager(ABC):
         恢复执行上下文快照
         ⚠️ 实现时必须确保返回全新的ExecutionContext实例（深拷贝）
         防止与原ExecutionContext共享引用导致的状态污染
+        ⚠️ 实现时必须在恢复后清空 ExecutionContext.snapshot_id 以避免循环依赖
         """
         pass
 ```
