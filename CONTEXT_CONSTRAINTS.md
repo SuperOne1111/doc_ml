@@ -12,6 +12,7 @@
 - [ ] 是否只有 Engine 在修改 `GlobalState.lifecycle_state`？
 - [ ] Agent 是否只返回 `AgentOutput` 而不触碰 State？
 - [ ] Tool 是否无法访问 Engine、Agent、Policy？
+- [ ] Agent 的 output.data 是否不包含生命周期状态转移相关字段？
 
 ### 2. 状态只写
 ```
@@ -67,6 +68,7 @@
 | 权限控制 | 检查工具调用前 | 经过 Policy.check_tool_permission |
 | 并行支持 | 检查 ExecutionContext | active_steps 正确跟踪并行状态 |
 | 回滚测试 | 运行测试用例 | SnapshotManager 能正确恢复 ExecutionContext |
+| Agent 输出验证 | 检查 Agent.validate_output | output.data 不包含生命周期状态转移相关字段 |
 
 ## 🚫 禁止行为清单
 

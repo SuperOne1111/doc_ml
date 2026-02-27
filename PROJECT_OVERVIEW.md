@@ -74,6 +74,11 @@ INIT → CONTEXT_BUILD → PLAN_GENERATION → PLAN_CHECK → EXECUTION_PREPARE
 | ExecutionContext | Mutable | 当前计划、中间结果 | 是（快照恢复） |
 | StepContext | Ephemeral | 当前工具输入输出 | 否（执行后清理） |
 
+⚠️ **重要注意事项**：
+- ExecutionContext 在并行执行环境中会被多个步骤同时访问，实现时必须确保并发安全
+- 在快照恢复时，必须清空 ExecutionContext.snapshot_id 以避免循环依赖
+- 在快照恢复时，必须清空 ExecutionContext.current_batch_id 以防止重复处理
+
 ## 8. 可观测性要求
 
 所有关键路径必须记录：
@@ -92,5 +97,6 @@ INIT → CONTEXT_BUILD → PLAN_GENERATION → PLAN_CHECK → EXECUTION_PREPARE
 - [ ] Reviewer 评分 ≥ 阈值
 - [ ] 无未解决错误
 - [ ] 迭代次数未超限
+- [ ] Agent 输出的数据不包含生命周期状态转移相关字段
 
 否则不可进入 COMPLETED 状态。

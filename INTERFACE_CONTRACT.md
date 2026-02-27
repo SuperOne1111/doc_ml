@@ -40,6 +40,11 @@ class ExecutionContext(BaseModel):
     snapshot_id: Optional[str]
 ```
 
+⚠️ 注意事项：
+- 此对象在并行执行环境中会被多个步骤同时访问，实现时必须确保并发安全
+- 在快照恢复时，必须清空 snapshot_id 以避免循环依赖
+- 在快照恢复时，必须清空 current_batch_id 以防止重复处理
+
 ### StepContext（临时）
 ```python
 class StepContext(BaseModel):
@@ -126,6 +131,38 @@ HUMAN_INTERACTION, ERROR_OCCURRED
 ### MemoryScope（记忆范围）
 ```python
 EPHEMERAL, SESSION, GLOBAL
+```
+
+### BaseSnapshotManager 抽象接口（快照管理）
+
+```python
+class BaseSnapshotManager(ABC):
+    @abstractmethod
+    async def create_snapshot(
+        self,
+        execution_context: ExecutionContext,
+        label: str,
+    ) -> str:
+        """
+        创建执行上下文快照
+        ⚠️ 实现时必须确保执行深拷贝 (deepcopy)，防止恢复后状态污染
+        返回 snapshot_id
+        """
+        pass
+
+    @abstractmethod
+    async def restore_snapshot(
+        self,
+        snapshot_id: str,
+    ) -> ExecutionContext:
+        """
+        恢复执行上下文快照
+        ⚠️ 实现时必须确保返回全新的ExecutionContext实例（深拷贝）
+        防止与原ExecutionContext共享引用导致的状态污染
+        ⚠️ 实现时必须在恢复后清空 ExecutionContext.snapshot_id 以避免循环依赖
+        ⚠️ 实现时必须在恢复后清空 ExecutionContext.current_batch_id 以防止重复处理
+        """
+        pass
 ```
 
 ## 5. 接口实现样例

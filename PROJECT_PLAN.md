@@ -40,6 +40,7 @@
 - [ ] PolicyDecision.validate_consistency 验证 allow=False 时 next_state 的合法性
 - [ ] ExecutionContext 并发访问安全（锁机制或不可变副本）
 - [ ] 恢复快照后 ExecutionContext.snapshot_id 被正确清空
+- [ ] 恢复快照后 ExecutionContext.current_batch_id 被正确清空
 
 ---
 
@@ -96,6 +97,7 @@
 - [ ] Agent 只读 GlobalState，不修改 State
 - [ ] 所有 Agent 返回 AgentOutput 格式
 - [ ] Reviewer 拥有否决权逻辑实现
+- [ ] Agent.validate_output 验证 output.data 不包含生命周期状态转移相关字段
 
 ---
 
