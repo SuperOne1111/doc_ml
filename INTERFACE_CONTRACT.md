@@ -38,15 +38,18 @@ class ExecutionContext(BaseModel):
     intermediate_results: Dict[str, Any]
     errors: List[str]
     snapshot_id: Optional[str]
+    concurrent_access_lock: Optional[str]  # 用于标识是否需要额外的并发控制
 
     def safe_update(self, **kwargs) -> 'ExecutionContext':
         """
         线程安全地更新 ExecutionContext
         返回新的实例以避免并发修改问题
+        ⚠️ 所有对 ExecutionContext 的修改必须通过此方法确保线程安全
         """
         import copy
         updated_data = self.model_dump()
         updated_data.update(kwargs)
+        # 确保并发安全，在实际实现中应使用适当的锁机制
         return ExecutionContext(**updated_data)
 ```
 
@@ -81,6 +84,7 @@ class StructuredError(BaseModel):
     severity: Literal["INFO", "WARNING", "CRITICAL"]
     retryable: bool
     suggested_action: Optional[Literal["RETRY", "HALT"]]  # 限制权限，不允许REPLAN/ROLLBACK
+    suggested_next_state: Optional[LifecycleState] = None  # 仅作为提示，最终状态转移由Engine决定
     metadata: Dict[str, Any]
 ```
 

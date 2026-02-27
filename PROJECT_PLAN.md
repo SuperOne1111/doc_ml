@@ -40,6 +40,8 @@
 - [ ] PolicyDecision.validate_consistency 验证 allow=False 时 next_state 的合法性
 - [ ] ExecutionContext 实现 safe_update 方法确保并发安全
 - [ ] 恢复快照后 ExecutionContext.snapshot_id 被正确清空
+- [ ] StructuredError 包含 suggested_next_state 字段，仅作为提示
+- [ ] 并行执行中 ExecutionContext 不会出现竞态条件
 
 ---
 
@@ -59,6 +61,7 @@
 - [ ] 只有 Engine.transition() 能修改 lifecycle_state
 - [ ] 支持 INIT → COMPLETED 硬编码流程跑通
 - [ ] ExecutionContext 并发访问安全（锁机制或不可变副本）
+- [ ] 所有对 ExecutionContext 的修改都通过 safe_update 方法
 
 ---
 
@@ -116,6 +119,7 @@
 - [ ] Tool 执行前经过 Policy 权限校验
 - [ ] 错误封装为 StructuredError
 - [ ] Tool 的 suggested_action 仅限 RETRY 或 HALT（不允许建议 ROLLBACK/REPLAN）
+- [ ] Tool 的 StructuredError 可包含 suggested_next_state 字段作为提示
 
 ---
 
