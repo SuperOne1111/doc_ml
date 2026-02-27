@@ -70,7 +70,7 @@ class StructuredError(BaseModel):
     message: str
     severity: Literal["INFO", "WARNING", "CRITICAL"]
     retryable: bool
-    suggested_action: Optional[Literal["RETRY", "REPLAN", "ROLLBACK", "HALT"]]
+    suggested_action: Optional[Literal["RETRY", "HALT"]]
     metadata: Dict[str, Any]
 ```
 
@@ -83,6 +83,23 @@ class PolicyDecision(BaseModel):
     risk_level: RiskLevel
     require_human_approval: bool  # 强制人工介入
     blocked_tools: List[str]
+    
+    def validate_consistency(self) -> bool:
+        """
+        验证决策一致性
+        当 allow=False 时，next_state 应为 None 或明确指向错误处理状态
+        """
+        if not self.allow:
+            # 如果不允许继续，则不能有正常的下一步状态
+            from src.core.types import LifecycleState
+            if self.next_state is not None and self.next_state not in [
+                LifecycleState.FAILED, 
+                LifecycleState.ROLLBACK, 
+                LifecycleState.WAIT_HUMAN,
+                LifecycleState.REPLAN
+            ]:
+                return False
+        return True
 ```
 
 ## 4. 核心枚举
@@ -234,3 +251,4 @@ mypy src/
 - ❌ 将 `LifecycleState` 字符串直接赋值（应使用枚举）
 - ❌ 将 `ExecutionContext` 传给只接受 `GlobalState` 的参数
 - ❌ 忘记 `Optional` 字段的 None 检查
+- ❌ Tool 的 `suggested_action` 包含 `REPLAN` 或 `ROLLBACK`（应由 Engine 决定）

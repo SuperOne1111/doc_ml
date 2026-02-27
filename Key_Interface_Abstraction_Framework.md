@@ -1,6 +1,6 @@
 # 关键接口抽象框架Key Interface Abstraction Framework
 
-**版本**：2.0  
+**版本**：3.0  
 **依据**：《多智能体协作系统需求思路详述.md》  
 **目标**：构建可控、可扩展、可自愈、可审计、可长期运行的智能任务执行平台。
 
@@ -59,6 +59,16 @@ class LifecycleState(str, Enum):
     ROLLBACK = "ROLLBACK"
     COMPLETED = "COMPLETED"
     FAILED = "FAILED"
+
+    @classmethod
+    def is_error_state(cls, state: 'LifecycleState') -> bool:
+        """判断是否为错误处理状态"""
+        return state in [cls.FAILED, cls.ROLLBACK, cls.REPLAN, cls.WAIT_HUMAN]
+
+    @classmethod
+    def is_terminal_state(cls, state: 'LifecycleState') -> bool:
+        """判断是否为终端状态"""
+        return state in [cls.COMPLETED, cls.FAILED]
 
 class StepStatus(str, Enum):
     """步骤执行状态 (支持并行跟踪与自愈)"""
@@ -148,6 +158,8 @@ class ExecutionContext(BaseModel):
     """
     Execution Context (可快照回滚)
     包含当前计划、中间结果、错误记录
+    ⚠️ 注意：此对象在并行执行环境中会被多个步骤同时访问，
+    实现时必须确保并发安全（例如使用锁机制或不可变副本）
     """
     current_plan: Optional[ExecutionPlan] = None
     active_steps: Dict[str, StepStatus] = {}  # 支持并行状态跟踪
@@ -177,6 +189,7 @@ class StructuredError(BaseModel):
     """
     结构化错误 (禁止抛裸异常跨层传播)
     支持自愈逻辑判断
+    ⚠️ 注意：suggested_action 仅作为提示，最终决策权归 Execution Engine 所有
     """
     code: str
     message: str
@@ -195,6 +208,22 @@ class PolicyDecision(BaseModel):
     risk_level: RiskLevel = RiskLevel.LOW
     require_human_approval: bool = False  # 强制人工介入标记
     blocked_tools: List[str] = []         # 因权限被拦截的工具
+    
+    def validate_consistency(self) -> bool:
+        """
+        验证决策一致性
+        当 allow=False 时，next_state 应为 None 或明确指向错误处理状态
+        """
+        if not self.allow:
+            # 如果不允许继续，则不能有正常的下一步状态
+            if self.next_state is not None and self.next_state not in [
+                LifecycleState.FAILED, 
+                LifecycleState.ROLLBACK, 
+                LifecycleState.WAIT_HUMAN,
+                LifecycleState.REPLAN
+            ]:
+                return False
+        return True
 
 class AgentOutput(BaseModel):
     success: bool
@@ -455,7 +484,11 @@ class BaseSnapshotManager(ABC):
         execution_context: ExecutionContext,
         label: str,
     ) -> str:
-        """返回 snapshot_id"""
+        """
+        创建执行上下文快照
+        ⚠️ 实现时必须确保执行深拷贝 (deepcopy)，防止恢复后状态污染
+        返回 snapshot_id
+        """
         pass
 
     @abstractmethod

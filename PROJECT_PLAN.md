@@ -35,6 +35,7 @@
 - [ ] Tracer 能记录并回放完整 Trace
 - [ ] Memory 支持三种 Scope 存储
 - [ ] Snapshot 能正确创建和恢复 ExecutionContext
+- [ ] Snapshot.create_snapshot 实现深拷贝，防止状态污染
 
 ---
 
@@ -53,6 +54,7 @@
 - [ ] 状态转移严格遵循 13 个 LifecycleState
 - [ ] 只有 Engine.transition() 能修改 lifecycle_state
 - [ ] 支持 INIT → COMPLETED 硬编码流程跑通
+- [ ] ExecutionContext 并发访问安全（锁机制或不可变副本）
 
 ---
 
@@ -109,6 +111,7 @@
 - [ ] Tool 执行前经过 Schema 验证
 - [ ] Tool 执行前经过 Policy 权限校验
 - [ ] 错误封装为 StructuredError
+- [ ] Tool 的 suggested_action 仅限 RETRY 或 HALT（不允许建议 ROLLBACK/REPLAN）
 
 ---
 

@@ -113,7 +113,7 @@ sequenceDiagram
                 alt error.suggested_action=RETRY
                     Engine->>Engine: "retry_tool(backoff)"
                     Engine->>Engine: "active_steps[step_id]=RUNNING"
-                else error.suggested_action=ROLLBACK
+                else error.suggested_action=HALT
                     Engine->>Engine: "active_steps[step_id]=FAILED"
                     Engine->>Engine: "escalate_to_step_review()"
                 end
@@ -158,6 +158,7 @@ sequenceDiagram
                 Engine->>Engine: "transition() lifecycle_state=ROLLBACK"
                 Engine->>Snapshot: "restore_snapshot(snap_002)"
                 Engine->>Tracer: "record_event(SNAPSHOT_RESTORED, snap_002)"
+                Engine->>Engine: "execution_context.snapshot_id=None"  # 清空快照ID，标记为已恢复
                 Engine->>Engine: "transition() lifecycle_state=REPLAN"
                 Engine->>Engine: "execution_context.replan_scope=GLOBAL"
                 Note right of Engine: 全局回滚 + 重规划
