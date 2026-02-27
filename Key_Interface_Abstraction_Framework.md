@@ -161,6 +161,7 @@ class ExecutionContext(BaseModel):
     ⚠️ 注意：此对象在并行执行环境中会被多个步骤同时访问，
     实现时必须确保并发安全（例如使用锁机制或不可变副本）
     ⚠️ 注意：在快照恢复时，必须清空 snapshot_id 以避免循环依赖
+    ⚠️ 注意：ExecutionContext 的修改必须通过 safe_update 方法确保线程安全
     """
     current_plan: Optional[ExecutionPlan] = None
     active_steps: Dict[str, StepStatus] = {}  # 支持并行状态跟踪
@@ -169,15 +170,18 @@ class ExecutionContext(BaseModel):
     intermediate_results: Dict[str, Any] = {}
     errors: List[str] = []
     snapshot_id: Optional[str] = None # 当前关联的快照 ID
+    concurrent_access_lock: Optional[str] = None  # 用于标识是否需要额外的并发控制
 
     def safe_update(self, **kwargs) -> 'ExecutionContext':
         """
         线程安全地更新 ExecutionContext
         返回新的实例以避免并发修改问题
+        ⚠️ 所有对 ExecutionContext 的修改必须通过此方法确保线程安全
         """
         import copy
         updated_data = self.model_dump()
         updated_data.update(kwargs)
+        # 确保并发安全，在实际实现中应使用适当的锁机制
         return ExecutionContext(**updated_data)
 
 class StepContext(BaseModel):
@@ -207,6 +211,7 @@ class StructuredError(BaseModel):
     severity: Literal["INFO", "WARNING", "CRITICAL"]
     retryable: bool = False           # 指示引擎是否应自动重试
     suggested_action: Optional[Literal["RETRY", "HALT"]] = None  # 限制权限，REPLAN/ROLLBACK由Engine决定
+    suggested_next_state: Optional[LifecycleState] = None  # 仅作为提示，最终状态转移由Engine决定
     metadata: Dict[str, Any] = {}
 
 class PolicyDecision(BaseModel):

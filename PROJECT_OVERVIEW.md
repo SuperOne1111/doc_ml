@@ -68,11 +68,11 @@ INIT → CONTEXT_BUILD → PLAN_GENERATION → PLAN_CHECK → EXECUTION_PREPARE
 
 ## 7. 三层状态隔离
 
-| 层级 | 可变性 | 用途 | 回滚支持 |
-|------|--------|------|----------|
-| GlobalState | Immutable | 原始任务、生命周期阶段 | 否（仅 Engine 更新引用） |
-| ExecutionContext | Mutable | 当前计划、中间结果 | 是（快照恢复） |
-| StepContext | Ephemeral | 当前工具输入输出 | 否（执行后清理） |
+| 层级 | 可变性 | 用途 | 回滚支持 | 并发安全 |
+|------|--------|------|----------|----------|
+| GlobalState | Immutable | 原始任务、生命周期阶段 | 否（仅 Engine 更新引用） | 无（冻结对象） |
+| ExecutionContext | Mutable | 当前计划、中间结果 | 是（快照恢复） | 是（safe_update 方法） |
+| StepContext | Ephemeral | 当前工具输入输出 | 否（执行后清理） | 否（单步独占） |
 
 ## 8. 可观测性要求
 

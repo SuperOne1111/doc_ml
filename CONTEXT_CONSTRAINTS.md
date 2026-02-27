@@ -55,6 +55,17 @@
 - [ ] 所有异常是否转换为 StructuredError？
 - [ ] StructuredError 是否包含 suggested_action？
 
+### 6. 并发安全
+```
+✅ 正确：ExecutionContext 修改通过 safe_update 方法
+❌ 错误：直接修改 ExecutionContext 字段
+```
+
+**检查清单**：
+- [ ] ExecutionContext 修改是否都通过 safe_update 方法？
+- [ ] 并行执行中 ExecutionContext 是否存在竞态条件？
+- [ ] Snapshot 恢复后 ExecutionContext.snapshot_id 是否被清空？
+
 ## 📋 实现检查清单（每次代码生成后自查）
 
 | 检查项 | 验证方法 | 通过标准 |
