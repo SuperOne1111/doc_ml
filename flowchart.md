@@ -159,6 +159,7 @@ sequenceDiagram
                 Engine->>Snapshot: "restore_snapshot(snap_002)"
                 Engine->>Tracer: "record_event(SNAPSHOT_RESTORED, snap_002)"
                 Engine->>Engine: "execution_context.snapshot_id=None"  # 清空快照ID，标记为已恢复
+                Engine->>Engine: "execution_context.current_batch_id=None"  # 清空批次ID，防止重复处理
                 Engine->>Engine: "transition() lifecycle_state=REPLAN"
                 Engine->>Engine: "execution_context.replan_scope=GLOBAL"
                 Note right of Engine: 全局回滚 + 重规划

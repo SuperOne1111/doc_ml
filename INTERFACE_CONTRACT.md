@@ -70,7 +70,7 @@ class StructuredError(BaseModel):
     message: str
     severity: Literal["INFO", "WARNING", "CRITICAL"]
     retryable: bool
-    suggested_action: Optional[Literal["RETRY", "HALT"]]
+    suggested_action: Optional[Literal["RETRY", "HALT"]]  # 限制权限，不允许REPLAN/ROLLBACK
     metadata: Dict[str, Any]
 ```
 
