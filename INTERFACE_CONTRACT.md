@@ -38,6 +38,16 @@ class ExecutionContext(BaseModel):
     intermediate_results: Dict[str, Any]
     errors: List[str]
     snapshot_id: Optional[str]
+
+    def safe_update(self, **kwargs) -> 'ExecutionContext':
+        """
+        线程安全地更新 ExecutionContext
+        返回新的实例以避免并发修改问题
+        """
+        import copy
+        updated_data = self.model_dump()
+        updated_data.update(kwargs)
+        return ExecutionContext(**updated_data)
 ```
 
 ### StepContext（临时）

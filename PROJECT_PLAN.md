@@ -38,7 +38,7 @@
 - [ ] Snapshot.create_snapshot 实现深拷贝，防止状态污染
 - [ ] Tool 的 suggested_action 仅限 RETRY 或 HALT（不允许建议 ROLLBACK/REPLAN）
 - [ ] PolicyDecision.validate_consistency 验证 allow=False 时 next_state 的合法性
-- [ ] ExecutionContext 并发访问安全（锁机制或不可变副本）
+- [ ] ExecutionContext 实现 safe_update 方法确保并发安全
 - [ ] 恢复快照后 ExecutionContext.snapshot_id 被正确清空
 
 ---
