@@ -1,47 +1,48 @@
-# Documentation and project files
-*.md
-*.txt
-*.json
-*.yml
-*.yaml
-*.toml
-*.cfg
-*.ini
-
-# Build artifacts and dependencies
+```markdown
+# Compiled and build artifacts
 *.pyc
 __pycache__/
-*.class
 *.o
 *.obj
-*.exe
-*.dll
-*.so
-*.a
-*.out
-node_modules/
-venv/
-.venv/
-.env
-.env.local
-*.env.*
-target/
-.gradle/
-.mypy_cache/
-.pytest_cache/
 dist/
 build/
-coverage/
-htmlcov/
-.coverage
+target/
+
+# Dependencies
+.venv/
+venv/
+node_modules/
+.mypy_cache/
+.pytest_cache/
+.gradle/
+julia-*/
+zig*/
+
+# Logs and temp files
 *.log
 *.tmp
 *.swp
 *.swo
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
 .vscode/
 .idea/
+
+# System files
 .DS_Store
 Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Compressed files
 *.zip
 *.gz
 *.tar
@@ -64,3 +65,4 @@ Thumbs.db
 *.tar.bz2
 *.tar.xz
 *.tar.zst
+```

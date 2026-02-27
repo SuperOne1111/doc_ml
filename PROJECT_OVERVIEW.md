@@ -29,9 +29,11 @@ Policy & Governance Layer               ← 规则引擎、风险控制、权限
 Tool Runtime Layer                      ← 工具注册、强校验、沙箱
         ↓
 State & Memory Infrastructure           ← 三层状态隔离、快照、记忆
+        ↓
+Tracer (Observability)                  ← 可观测性系统
 ```
 
-**依赖方向铁律**：`api → engine → agents → tools → policy → state → memory → tracer`
+**依赖方向铁律**：`api → engine → agents → tools → policy → state → memory → tracer → observability`
 
 ## 4. 核心状态机（13 个状态）
 

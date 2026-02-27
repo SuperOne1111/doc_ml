@@ -1,6 +1,6 @@
 # 关键接口抽象框架Key Interface Abstraction Framework
 
-**版本**：3.0  
+**版本**：4.0  # 版本升级以反映架构修正
 **依据**：《多智能体协作系统需求思路详述.md》  
 **目标**：构建可控、可扩展、可自愈、可审计、可长期运行的智能任务执行平台。
 
@@ -195,7 +195,7 @@ class StructuredError(BaseModel):
     message: str
     severity: Literal["INFO", "WARNING", "CRITICAL"]
     retryable: bool = False           # 指示引擎是否应自动重试
-    suggested_action: Optional[Literal["RETRY", "REPLAN", "ROLLBACK", "HALT"]] = None
+    suggested_action: Optional[Literal["RETRY", "HALT"]] = None  # 限制权限，REPLAN/ROLLBACK由Engine决定
     metadata: Dict[str, Any] = {}
 
 class PolicyDecision(BaseModel):
@@ -496,6 +496,11 @@ class BaseSnapshotManager(ABC):
         self,
         snapshot_id: str,
     ) -> ExecutionContext:
+        """
+        恢复执行上下文快照
+        ⚠️ 实现时必须确保返回全新的ExecutionContext实例（深拷贝）
+        防止与原ExecutionContext共享引用导致的状态污染
+        """
         pass
 ```
 
