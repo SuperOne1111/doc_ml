@@ -170,6 +170,16 @@ class ExecutionContext(BaseModel):
     errors: List[str] = []
     snapshot_id: Optional[str] = None # 当前关联的快照 ID
 
+    def safe_update(self, **kwargs) -> 'ExecutionContext':
+        """
+        线程安全地更新 ExecutionContext
+        返回新的实例以避免并发修改问题
+        """
+        import copy
+        updated_data = self.model_dump()
+        updated_data.update(kwargs)
+        return ExecutionContext(**updated_data)
+
 class StepContext(BaseModel):
     """
     Ephemeral Step Context (临时上下文)
