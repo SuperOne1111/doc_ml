@@ -1,9 +1,18 @@
-# Documentation and temporary files
+```markdown
+# Documentation and project files
+*.md
+*.txt
+*.json
+*.yml
+*.yaml
+*.toml
+*.cfg
+*.ini
+
+# Logs and temporary files
+*.log
 *.tmp
 *.temp
-
-# Logs
-*.log
 
 # Environment files
 .env
@@ -16,19 +25,18 @@
 *.swp
 *.swo
 
-# Dependency directories
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts and dependencies
+dist/
+build/
+target/
 node_modules/
 venv/
 .venv/
 __pycache__/
-.mypy_cache/
-.pytest_cache/
-dist/
-build/
-target/
-.gradle/
-
-# Compiled files
 *.pyc
 *.class
 *.o
@@ -39,14 +47,12 @@ target/
 *.a
 *.out
 
-# System files
-.DS_Store
-Thumbs.db
-
-# Coverage
+# Coverage and testing
 coverage/
 htmlcov/
 .coverage
+.mypy_cache/
+.pytest_cache/
 
 # Compressed files
 *.zip
@@ -71,3 +77,4 @@ htmlcov/
 *.tar.bz2
 *.tar.xz
 *.tar.zst
+```

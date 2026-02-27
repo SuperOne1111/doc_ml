@@ -45,6 +45,7 @@ class ExecutionContext(BaseModel):
         线程安全地更新 ExecutionContext
         返回新的实例以避免并发修改问题
         ⚠️ 所有对 ExecutionContext 的修改必须通过此方法确保线程安全
+        ⚠️ 此方法必须是原子性的，防止在更新过程中出现竞态条件
         """
         import copy
         updated_data = self.model_dump()
@@ -102,6 +103,7 @@ class PolicyDecision(BaseModel):
         """
         验证决策一致性
         当 allow=False 时，next_state 应为 None 或明确指向错误处理状态
+        ⚠️ 此方法对于确保策略决策的安全性和一致性至关重要，必须在所有决策后调用验证
         """
         if not self.allow:
             # 如果不允许继续，则不能有正常的下一步状态

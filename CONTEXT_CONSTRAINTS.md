@@ -58,13 +58,17 @@
 ### 6. 并发安全
 ```
 ✅ 正确：ExecutionContext 修改通过 safe_update 方法
+✅ 正确：safe_update 方法实现确保了原子性操作
 ❌ 错误：直接修改 ExecutionContext 字段
+❌ 错误：safe_update 方法中出现竞态条件
 ```
 
 **检查清单**：
 - [ ] ExecutionContext 修改是否都通过 safe_update 方法？
 - [ ] 并行执行中 ExecutionContext 是否存在竞态条件？
 - [ ] Snapshot 恢复后 ExecutionContext.snapshot_id 是否被清空？
+- [ ] safe_update 方法是否实现了原子性操作？
+- [ ] ExecutionContext 的所有修改操作是否都避免了竞态条件？
 
 ## 📋 实现检查清单（每次代码生成后自查）
 
