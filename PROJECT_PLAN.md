@@ -42,6 +42,7 @@
 - [ ] 恢复快照后 ExecutionContext.snapshot_id 被正确清空
 - [ ] StructuredError 包含 suggested_next_state 字段，仅作为提示
 - [ ] 并行执行中 ExecutionContext 不会出现竞态条件
+- [ ] ExecutionContext.safe_update 方法实现原子性操作，防止更新过程中的竞态条件
 
 ---
 
@@ -62,6 +63,7 @@
 - [ ] 支持 INIT → COMPLETED 硬编码流程跑通
 - [ ] ExecutionContext 并发访问安全（锁机制或不可变副本）
 - [ ] 所有对 ExecutionContext 的修改都通过 safe_update 方法
+- [ ] ExecutionContext.safe_update 方法实现原子性操作，防止更新过程中的竞态条件
 
 ---
 

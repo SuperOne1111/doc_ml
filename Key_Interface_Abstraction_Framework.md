@@ -162,6 +162,7 @@ class ExecutionContext(BaseModel):
     实现时必须确保并发安全（例如使用锁机制或不可变副本）
     ⚠️ 注意：在快照恢复时，必须清空 snapshot_id 以避免循环依赖
     ⚠️ 注意：ExecutionContext 的修改必须通过 safe_update 方法确保线程安全
+    ⚠️ 注意：所有对 ExecutionContext 的修改操作都必须是原子性的，防止竞态条件
     """
     current_plan: Optional[ExecutionPlan] = None
     active_steps: Dict[str, StepStatus] = {}  # 支持并行状态跟踪
@@ -177,6 +178,7 @@ class ExecutionContext(BaseModel):
         线程安全地更新 ExecutionContext
         返回新的实例以避免并发修改问题
         ⚠️ 所有对 ExecutionContext 的修改必须通过此方法确保线程安全
+        ⚠️ 此方法必须是原子性的，防止在更新过程中出现竞态条件
         """
         import copy
         updated_data = self.model_dump()
@@ -229,6 +231,7 @@ class PolicyDecision(BaseModel):
         """
         验证决策一致性
         当 allow=False 时，next_state 应为 None 或明确指向错误处理状态
+        ⚠️ 此方法对于确保策略决策的安全性和一致性至关重要，必须在所有决策后调用验证
         """
         if not self.allow:
             # 如果不允许继续，则不能有正常的下一步状态
@@ -530,6 +533,7 @@ class BaseSnapshotManager(ABC):
         ⚠️ 实现时必须确保返回全新的ExecutionContext实例（深拷贝）
         防止与原ExecutionContext共享引用导致的状态污染
         ⚠️ 实现时必须在恢复后清空 ExecutionContext.snapshot_id 以避免循环依赖
+        ⚠️ 恢复操作必须是原子性的，确保状态的一致性
         """
         pass
 ```
