@@ -37,11 +37,13 @@
 ```
 ✅ 正确：Tool.execute() 只处理输入输出
 ❌ 错误：Tool 调用 Engine.transition()
+❌ 错误：Tool 建议 ROLLBACK 或 REPLAN（应由 Engine 决定）
 ```
 
 **检查清单**：
 - [ ] Tool 是否无法导入 Engine、Agent、Policy 模块？
 - [ ] Tool 执行前是否经过 Policy.check_tool_permission？
+- [ ] Tool 的 suggested_action 是否仅限 RETRY 或 HALT？
 
 ### 5. 错误处理
 ```
